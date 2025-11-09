@@ -3,7 +3,7 @@ import { updateDay, deleteDay, deletePlace } from '../utils/storage'
 import { useDraggable, useDroppable } from '@dnd-kit/core'
 import { Pencil, Trash2, X, Check, Calendar } from 'lucide-react'
 
-function PlaceItem({ place, dayId, tripId, onUpdate }) {
+function PlaceItem({ place, dayId, tripId, onUpdate, onPlaceClick, selectionMode, isSelected, onToggleSelect }) {
   const {
     attributes,
     listeners,
@@ -16,7 +16,8 @@ function PlaceItem({ place, dayId, tripId, onUpdate }) {
       type: 'place',
       place,
       dayId
-    }
+    },
+    disabled: selectionMode
   })
 
   const style = transform ? {
@@ -32,33 +33,61 @@ function PlaceItem({ place, dayId, tripId, onUpdate }) {
     }
   }
 
+  const handleClick = (e) => {
+    e.stopPropagation()
+    if (selectionMode) {
+      onToggleSelect?.(place.id)
+    } else {
+      onPlaceClick?.(place)
+    }
+  }
+
   return (
     <div
       ref={setNodeRef}
       style={style}
-      {...attributes}
-      {...listeners}
-      className="bg-white border border-gray-200 rounded-md p-2.5 flex justify-between items-start hover:border-gray-300 hover:shadow-sm cursor-move touch-none transition-all group"
+      {...(!selectionMode ? attributes : {})}
+      {...(!selectionMode ? listeners : {})}
+      className={`bg-white border rounded-md p-2.5 flex justify-between items-start hover:border-gray-300 hover:shadow-sm transition-all group ${
+        selectionMode ? 'cursor-pointer' : 'cursor-move touch-none'
+      } ${
+        isSelected ? 'border-blue-500 bg-blue-50' : 'border-gray-200'
+      }`}
     >
-      <div className="flex-1 min-w-0 pr-2">
+      {selectionMode && (
+        <input
+          type="checkbox"
+          checked={isSelected}
+          onChange={() => onToggleSelect?.(place.id)}
+          className="mr-2 mt-1 w-4 h-4 flex-shrink-0 cursor-pointer"
+          onClick={(e) => e.stopPropagation()}
+        />
+      )}
+      <div
+        className="flex-1 min-w-0 pr-2 cursor-pointer"
+        onClick={handleClick}
+      >
         <p className="font-medium text-gray-800 text-sm truncate">{place.name}</p>
         {place.address && (
           <p className="text-xs text-gray-500 mt-0.5 line-clamp-1">{place.address}</p>
         )}
       </div>
-      <button
-        onClick={handleDelete}
-        className="ml-2 w-6 h-6 flex items-center justify-center flex-shrink-0 text-gray-400 hover:text-red-500 hover:bg-red-50 rounded transition-colors"
-        title="Eliminar lugar"
-      >
-        <X size={16} />
-      </button>
+      {!selectionMode && (
+        <button
+          onClick={handleDelete}
+          className="ml-2 w-6 h-6 flex items-center justify-center flex-shrink-0 text-gray-400 hover:text-red-500 hover:bg-red-50 rounded transition-colors"
+          title="Eliminar lugar"
+        >
+          <X size={16} />
+        </button>
+      )}
     </div>
   )
 }
 
-export default function DayBlock({ day, tripId, onUpdate, isSelected, onSelect, isUnassigned = false }) {
+export default function DayBlock({ day, tripId, onUpdate, isSelected, onSelect, isUnassigned = false, onPlaceClick, selectionMode, selectedPlaces, onToggleSelect }) {
   const [isEditing, setIsEditing] = useState(false)
+  const places = isUnassigned ? day : day.places
   const [isCollapsed, setIsCollapsed] = useState(false)
   const [title, setTitle] = useState(day.title)
   const [date, setDate] = useState(day.date)
@@ -66,22 +95,14 @@ export default function DayBlock({ day, tripId, onUpdate, isSelected, onSelect, 
 
   const dayId = isUnassigned ? 'unassigned' : day.id
 
-  // Para hacer el bloque droppable (recibir lugares)
+  // Un solo droppable que maneja tanto lugares como bloques
   const { setNodeRef: setDroppableRef, isOver } = useDroppable({
     id: `droppable-${dayId}`,
     data: {
       type: 'day',
-      dayId
-    }
-  })
-
-  // Para hacer el bloque también droppable para otros bloques
-  const { setNodeRef: setBlockDroppableRef, isOver: isBlockOver } = useDroppable({
-    id: `block-droppable-${dayId}`,
-    data: {
-      type: 'day-block',
       dayId,
-      day
+      day,
+      isUnassigned
     }
   })
 
@@ -97,7 +118,8 @@ export default function DayBlock({ day, tripId, onUpdate, isSelected, onSelect, 
     data: {
       type: 'day-block',
       dayId,
-      day
+      day,
+      isUnassigned
     },
     disabled: isUnassigned || isEditing
   })
@@ -122,8 +144,6 @@ export default function DayBlock({ day, tripId, onUpdate, isSelected, onSelect, 
     }
   }
 
-  const places = isUnassigned ? day : day.places
-
   // Función para determinar si el texto debe ser oscuro basado en el color de fondo
   const shouldUseDarkText = (bgColor) => {
     if (!bgColor) return false
@@ -140,20 +160,25 @@ export default function DayBlock({ day, tripId, onUpdate, isSelected, onSelect, 
   const textColorClass = isUnassigned ? 'text-gray-800' : (shouldUseDarkText(color) ? 'text-gray-800' : 'text-white')
   const textOpacityClass = isUnassigned ? 'text-gray-600' : (shouldUseDarkText(color) ? 'text-gray-600' : 'text-white/80')
 
+  // Combinar refs del droppable y draggable en el contenedor principal
+  const setAllRefs = (node) => {
+    setDraggableRef(node)
+    setDroppableRef(node)
+  }
+
   return (
     <div
-      ref={setDraggableRef}
+      ref={setAllRefs}
       style={blockStyle}
       className={`border rounded-lg overflow-hidden mb-3 transition-all ${
         isSelected ? 'ring-2 ring-blue-500 shadow-lg' : 'border-gray-200 shadow-sm'
-      } ${isBlockDragging ? 'cursor-grabbing' : ''}`}
+      } ${isBlockDragging ? 'cursor-grabbing' : ''} ${
+        isOver ? 'ring-2 ring-blue-400' : ''
+      }`}
     >
-      {/* Header del bloque - droppable para reordenar bloques */}
+      {/* Header del bloque */}
       <div
-        ref={setBlockDroppableRef}
-        className={`px-3 py-2 cursor-pointer relative ${
-          isBlockOver && !isUnassigned ? 'ring-2 ring-green-400' : ''
-        }`}
+        className="px-3 py-2 cursor-pointer relative"
         style={{ backgroundColor: isUnassigned ? '#e5e7eb' : color }}
         onClick={() => onSelect(isUnassigned ? 'unassigned' : day.id)}
       >
@@ -275,33 +300,30 @@ export default function DayBlock({ day, tripId, onUpdate, isSelected, onSelect, 
         </div>
       </div>
 
-      {/* Lista de lugares - solo visible si no está colapsada */}
-      {!isCollapsed && (
-        <div
-          ref={setDroppableRef}
-          className={`p-2.5 space-y-1.5 transition-colors ${
-            isOver ? 'bg-blue-50/50' : 'bg-gray-50'
-          }`}
-        >
-          {Array.isArray(places) && places.length > 0 ? (
-            places.map((place) => (
-              <PlaceItem
-                key={place.id}
-                place={place}
-                dayId={isUnassigned ? 'unassigned' : day.id}
-                tripId={tripId}
-                onUpdate={onUpdate}
-              />
-            ))
-          ) : (
-            <p className={`text-sm text-center py-6 ${
-              isOver ? 'text-blue-500 font-medium' : 'text-gray-400'
-            }`}>
-              {isUnassigned ? 'No hay lugares sin asignar' : 'Arrastra lugares aquí'}
-            </p>
-          )}
-        </div>
-      )}
+      {/* Lista de lugares */}
+      <div
+        className={`transition-colors bg-gray-50 ${!isCollapsed ? 'p-2.5 space-y-1.5 max-h-96 overflow-y-auto' : 'hidden'}`}
+      >
+        {Array.isArray(places) && places.length > 0 ? (
+          places.map((place) => (
+            <PlaceItem
+              key={place.id}
+              place={place}
+              dayId={isUnassigned ? 'unassigned' : day.id}
+              tripId={tripId}
+              onUpdate={onUpdate}
+              onPlaceClick={onPlaceClick}
+              selectionMode={selectionMode}
+              isSelected={selectedPlaces?.includes(place.id)}
+              onToggleSelect={onToggleSelect}
+            />
+          ))
+        ) : (
+          <p className="text-sm text-center py-6 text-gray-400">
+            {isUnassigned ? 'No hay lugares sin asignar' : 'Arrastra lugares aquí'}
+          </p>
+        )}
+      </div>
     </div>
   )
 }

@@ -57,6 +57,7 @@ export default function TripList({ onSelectTrip }) {
     try {
       exportTrips()
     } catch (error) {
+      console.error(error)
       alert('Error al exportar los viajes')
     }
   }
@@ -92,30 +93,30 @@ export default function TripList({ onSelectTrip }) {
   }
 
   return (
-    <div className="max-w-5xl mx-auto">
-      <div className="mb-8">
-        <div className="flex items-center justify-between mb-6">
-          <div className="flex items-center gap-3">
-            <Plane size={32} className="text-blue-600" />
-            <h1 className="text-3xl font-bold text-gray-800">Mis Viajes</h1>
+    <div className="max-w-5xl mx-auto px-4 py-4 md:py-0">
+      <div className="mb-6 md:mb-8">
+        <div className="flex items-center justify-between mb-4 md:mb-6 flex-wrap gap-3">
+          <div className="flex items-center gap-2 md:gap-3">
+            <Plane size={24} className="text-blue-600 md:w-8 md:h-8" />
+            <h1 className="text-2xl md:text-3xl font-bold text-gray-800">Mis Viajes</h1>
           </div>
-          <div className="flex gap-2">
+          <div className="flex gap-2 flex-shrink-0">
             <button
               onClick={handleExport}
               disabled={trips.length === 0}
-              className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors font-medium shadow-sm flex items-center gap-2 disabled:bg-gray-300 disabled:cursor-not-allowed"
+              className="px-3 md:px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors font-medium shadow-sm flex items-center gap-1 md:gap-2 disabled:bg-gray-300 disabled:cursor-not-allowed text-sm"
               title="Exportar todos los viajes"
             >
-              <Download size={18} />
-              <span>Exportar</span>
+              <Download size={16} className="md:w-[18px] md:h-[18px]" />
+              <span className="hidden sm:inline">Exportar</span>
             </button>
             <button
               onClick={handleImportClick}
-              className="px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors font-medium shadow-sm flex items-center gap-2"
+              className="px-3 md:px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors font-medium shadow-sm flex items-center gap-1 md:gap-2 text-sm"
               title="Importar viajes desde archivo"
             >
-              <Upload size={18} />
-              <span>Importar</span>
+              <Upload size={16} className="md:w-[18px] md:h-[18px]" />
+              <span className="hidden sm:inline">Importar</span>
             </button>
             <input
               ref={fileInputRef}
@@ -129,17 +130,17 @@ export default function TripList({ onSelectTrip }) {
 
         {/* Formulario para crear nuevo viaje */}
         <form onSubmit={handleCreateTrip}>
-          <div className="flex gap-3">
+          <div className="flex gap-2 md:gap-3">
             <input
               type="text"
               value={newTripName}
               onChange={(e) => setNewTripName(e.target.value)}
               placeholder="Ej: Viaje a Japón Abril 2026"
-              className="flex-1 px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-gray-800"
+              className="flex-1 px-3 md:px-4 py-2 md:py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-gray-800 text-sm md:text-base"
             />
             <button
               type="submit"
-              className="px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors font-medium shadow-sm"
+              className="px-4 md:px-6 py-2 md:py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors font-medium shadow-sm text-sm md:text-base whitespace-nowrap"
             >
               Crear Viaje
             </button>
@@ -149,54 +150,56 @@ export default function TripList({ onSelectTrip }) {
 
       {/* Lista de viajes */}
       {trips.length === 0 ? (
-        <div className="text-center py-16 bg-white rounded-xl border-2 border-dashed border-gray-300">
-          <Plane size={48} className="mx-auto text-gray-300 mb-4" />
-          <p className="text-gray-600 font-medium">No tienes viajes guardados aún</p>
-          <p className="text-gray-400 text-sm mt-2">Crea tu primer viaje usando el formulario arriba</p>
+        <div className="text-center py-12 md:py-16 bg-white rounded-xl border-2 border-dashed border-gray-300">
+          <Plane size={40} className="mx-auto text-gray-300 mb-4 md:w-12 md:h-12" />
+          <p className="text-gray-600 font-medium text-sm md:text-base">No tienes viajes guardados aún</p>
+          <p className="text-gray-400 text-xs md:text-sm mt-2 px-4">Crea tu primer viaje usando el formulario arriba</p>
         </div>
       ) : (
-        <div className="grid gap-3">
+        <div className="grid gap-2 md:gap-3">
           {trips.map((trip) => (
             <div
               key={trip.id}
-              className="bg-white rounded-lg border border-gray-200 p-5 hover:shadow-md hover:border-gray-300 transition-all"
+              className="bg-white rounded-lg border border-gray-200 p-3 md:p-5 hover:shadow-md hover:border-gray-300 transition-all"
             >
               {editingId === trip.id ? (
-                <div className="flex gap-2 items-center">
+                <div className="flex flex-col sm:flex-row gap-2 items-stretch sm:items-center">
                   <input
                     type="text"
                     value={editingName}
                     onChange={(e) => setEditingName(e.target.value)}
-                    className="flex-1 px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                    className="flex-1 px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm"
                     autoFocus
                   />
-                  <button
-                    onClick={() => handleSaveEdit(trip.id)}
-                    className="px-3 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 transition-colors flex items-center gap-1.5"
-                  >
-                    <Check size={16} />
-                    <span className="text-sm">Guardar</span>
-                  </button>
-                  <button
-                    onClick={handleCancelEdit}
-                    className="px-3 py-2 bg-gray-200 text-gray-700 rounded-md hover:bg-gray-300 transition-colors flex items-center gap-1.5"
-                  >
-                    <X size={16} />
-                    <span className="text-sm">Cancelar</span>
-                  </button>
+                  <div className="flex gap-2">
+                    <button
+                      onClick={() => handleSaveEdit(trip.id)}
+                      className="flex-1 sm:flex-none px-3 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 transition-colors flex items-center justify-center gap-1.5"
+                    >
+                      <Check size={16} />
+                      <span className="text-sm">Guardar</span>
+                    </button>
+                    <button
+                      onClick={handleCancelEdit}
+                      className="flex-1 sm:flex-none px-3 py-2 bg-gray-200 text-gray-700 rounded-md hover:bg-gray-300 transition-colors flex items-center justify-center gap-1.5"
+                    >
+                      <X size={16} />
+                      <span className="text-sm">Cancelar</span>
+                    </button>
+                  </div>
                 </div>
               ) : (
-                <div className="flex justify-between items-center">
+                <div className="flex flex-col sm:flex-row justify-between gap-3">
                   <div className="flex-1 min-w-0">
-                    <h3 className="text-lg font-semibold text-gray-800 mb-2 truncate">
+                    <h3 className="text-base md:text-lg font-semibold text-gray-800 mb-1 md:mb-2 truncate">
                       {trip.name}
                     </h3>
-                    <div className="flex gap-4 text-sm text-gray-500">
-                      <div className="flex items-center gap-1.5">
+                    <div className="flex gap-3 md:gap-4 text-xs md:text-sm text-gray-500">
+                      <div className="flex items-center gap-1 md:gap-1.5">
                         <Calendar size={14} />
                         <span>{trip.days.length} {trip.days.length === 1 ? 'día' : 'días'}</span>
                       </div>
-                      <div className="flex items-center gap-1.5">
+                      <div className="flex items-center gap-1 md:gap-1.5">
                         <MapPin size={14} />
                         <span>
                           {trip.days.reduce((acc, day) => acc + day.places.length, 0) +
@@ -208,23 +211,23 @@ export default function TripList({ onSelectTrip }) {
                       </div>
                     </div>
                   </div>
-                  <div className="flex gap-2 ml-4">
+                  <div className="flex gap-2 justify-end sm:ml-4">
                     <button
                       onClick={() => onSelectTrip(trip.id)}
-                      className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors font-medium text-sm shadow-sm"
+                      className="flex-1 sm:flex-none px-3 md:px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors font-medium text-sm shadow-sm"
                     >
                       Abrir
                     </button>
                     <button
                       onClick={() => handleStartEdit(trip)}
-                      className="px-3 py-2 bg-gray-100 text-gray-700 rounded-md hover:bg-gray-200 transition-colors flex items-center"
+                      className="px-2 md:px-3 py-2 bg-gray-100 text-gray-700 rounded-md hover:bg-gray-200 transition-colors flex items-center"
                       title="Editar"
                     >
                       <Edit2 size={16} />
                     </button>
                     <button
                       onClick={() => handleDeleteTrip(trip.id)}
-                      className="px-3 py-2 bg-red-50 text-red-600 rounded-md hover:bg-red-100 transition-colors flex items-center"
+                      className="px-2 md:px-3 py-2 bg-red-50 text-red-600 rounded-md hover:bg-red-100 transition-colors flex items-center"
                       title="Eliminar"
                     >
                       <Trash2 size={16} />

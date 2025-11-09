@@ -8,13 +8,14 @@ import {
   useSensors,
 } from '@dnd-kit/core'
 import DayBlock from './DayBlock'
-import { addDay, movePlace, reorderDays } from '../utils/storage'
-import { Map, MapPin, Plus } from 'lucide-react'
+import { addDay, reorderDays, movePlace } from '../utils/storage'
+import { Map, MapPin, Plus, CheckSquare, X, MoveRight } from 'lucide-react'
 
-export default function PlacesList({ trip, selectedDayId, onSelectDay, onUpdate }) {
+export default function PlacesList({ trip, selectedDayId, onSelectDay, onUpdate, onPlaceClick, selectedPlaces = [], onSelectedPlacesChange, targetDayId = '', onTargetDayIdChange, onMoveSelected }) {
   const [activeId, setActiveId] = useState(null)
   const [activeType, setActiveType] = useState(null)
   const [newDayTitle, setNewDayTitle] = useState('')
+  const [selectionMode, setSelectionMode] = useState(false)
 
   const sensors = useSensors(
     useSensor(PointerSensor, {
@@ -39,16 +40,17 @@ export default function PlacesList({ trip, selectedDayId, onSelectDay, onUpdate 
     const activeData = active.data.current
     const overData = over.data.current
 
-    if (!activeData) return
+    if (!activeData || !overData) return
 
     // Caso 1: Arrastrar un lugar (place) a un día
     if (activeData.type === 'place') {
       const sourceDayId = activeData.dayId
       let targetDayId = null
 
-      if (overData?.type === 'day') {
+      // El droppable ahora siempre es tipo 'day', sin importar si recibe lugares o bloques
+      if (overData.type === 'day') {
         targetDayId = overData.dayId
-      } else if (overData?.type === 'place') {
+      } else if (overData.type === 'place') {
         targetDayId = overData.dayId
       }
 
@@ -62,7 +64,8 @@ export default function PlacesList({ trip, selectedDayId, onSelectDay, onUpdate 
       const sourceDayId = activeData.dayId
       let targetDayId = null
 
-      if (overData?.type === 'day-block') {
+      // El droppable es tipo 'day', verificamos que no sea 'unassigned'
+      if (overData.type === 'day' && !overData.isUnassigned) {
         targetDayId = overData.dayId
       }
 
@@ -87,10 +90,80 @@ export default function PlacesList({ trip, selectedDayId, onSelectDay, onUpdate 
     }
   }
 
+  const handleToggleSelect = (placeId) => {
+    const newSelectedPlaces = selectedPlaces.includes(placeId)
+      ? selectedPlaces.filter(id => id !== placeId)
+      : [...selectedPlaces, placeId]
+    onSelectedPlacesChange(newSelectedPlaces)
+  }
+
+  const handleToggleSelectionMode = () => {
+    setSelectionMode(!selectionMode)
+    onSelectedPlacesChange([])
+  }
+
   return (
-    <div className="h-full overflow-y-auto">
-      <div className="p-3">
-        <h2 className="text-base font-bold text-gray-800 mb-3 px-1">Días y Lugares</h2>
+    <div className="h-full flex flex-col">
+      <div className="flex-shrink-0 p-3 bg-white">
+        <div className="flex items-center justify-between mb-3 px-1">
+          <h2 className="text-base font-bold text-gray-800">Días y Lugares</h2>
+          <button
+            onClick={handleToggleSelectionMode}
+            className={`px-3 py-1.5 rounded-md text-sm font-medium transition-colors flex items-center gap-1.5 ${
+              selectionMode
+                ? 'bg-blue-600 text-white hover:bg-blue-700'
+                : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+            }`}
+            title={selectionMode ? 'Cancelar selección' : 'Seleccionar varios lugares'}
+          >
+            {selectionMode ? (
+              <>
+                <X size={16} />
+                <span>Cancelar</span>
+              </>
+            ) : (
+              <>
+                <CheckSquare size={16} />
+                <span>Seleccionar</span>
+              </>
+            )}
+          </button>
+        </div>
+
+        {/* Barra de acción para selección múltiple */}
+        {selectionMode && selectedPlaces.length > 0 && (
+          <div className="mb-4 p-3 bg-blue-50 border border-blue-200 rounded-lg">
+            <div className="flex flex-col gap-2">
+              <p className="text-sm font-medium text-blue-900">
+                {selectedPlaces.length} {selectedPlaces.length === 1 ? 'lugar seleccionado' : 'lugares seleccionados'}
+              </p>
+              <div className="flex gap-2">
+                <select
+                  value={targetDayId}
+                  onChange={(e) => onTargetDayIdChange(e.target.value)}
+                  className="flex-1 px-3 py-2 border border-blue-300 rounded-md text-sm bg-white"
+                >
+                  <option value="">Seleccionar destino...</option>
+                  <option value="unassigned">Sin asignar</option>
+                  {trip.days.map(day => (
+                    <option key={day.id} value={day.id}>
+                      {day.title || 'Día sin título'}
+                    </option>
+                  ))}
+                </select>
+                <button
+                  onClick={onMoveSelected}
+                  disabled={!targetDayId}
+                  className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors text-sm font-medium flex items-center gap-1.5 disabled:bg-gray-300 disabled:cursor-not-allowed flex-shrink-0"
+                  title="Mover lugares seleccionados"
+                >
+                  <MoveRight size={16} />
+                  Mover
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
 
         {/* Formulario para agregar nuevo día */}
         <form onSubmit={handleAddDay} className="mb-4">
@@ -112,7 +185,10 @@ export default function PlacesList({ trip, selectedDayId, onSelectDay, onUpdate 
             </button>
           </div>
         </form>
+      </div>
 
+      {/* Área con scroll para los bloques */}
+      <div className="flex-1 overflow-y-auto px-3">
         <DndContext
           sensors={sensors}
           collisionDetection={closestCenter}
@@ -129,6 +205,10 @@ export default function PlacesList({ trip, selectedDayId, onSelectDay, onUpdate 
               onUpdate={onUpdate}
               isSelected={selectedDayId === day.id}
               onSelect={onSelectDay}
+              onPlaceClick={onPlaceClick}
+              selectionMode={selectionMode}
+              selectedPlaces={selectedPlaces}
+              onToggleSelect={handleToggleSelect}
             />
           ))}
 
@@ -141,6 +221,10 @@ export default function PlacesList({ trip, selectedDayId, onSelectDay, onUpdate 
             isSelected={selectedDayId === 'unassigned'}
             onSelect={onSelectDay}
             isUnassigned={true}
+            onPlaceClick={onPlaceClick}
+            selectionMode={selectionMode}
+            selectedPlaces={selectedPlaces}
+            onToggleSelect={handleToggleSelect}
           />
 
           <DragOverlay>
