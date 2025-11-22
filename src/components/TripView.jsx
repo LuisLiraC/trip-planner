@@ -65,7 +65,7 @@ export default function TripView({ tripId, onBack }) {
   }, [selectedDayId])
 
   if (!trip) {
-    return <div className="p-4">Cargando...</div>
+    return <div className="p-4">Loading...</div>
   }
 
   // Obtener lugares filtrados según el día seleccionado
@@ -93,7 +93,7 @@ export default function TripView({ tripId, onBack }) {
           className="px-2 md:px-3 py-1.5 bg-gray-100 text-gray-700 rounded-md hover:bg-gray-200 transition-colors text-sm font-medium flex items-center gap-1"
         >
           <span>←</span>
-          <span className="hidden sm:inline">Volver</span>
+          <span className="hidden sm:inline">Back</span>
         </button>
         <h1 className="text-base md:text-xl font-bold text-gray-800 truncate flex-1">{trip.name}</h1>
 
@@ -101,7 +101,7 @@ export default function TripView({ tripId, onBack }) {
         <button
           onClick={() => setIsSidebarOpen(true)}
           className="md:hidden p-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors"
-          title="Ver días y lugares"
+          title="View days and places"
         >
           <Menu size={20} />
         </button>
@@ -148,7 +148,7 @@ export default function TripView({ tripId, onBack }) {
             <div className="md:hidden fixed inset-y-0 right-0 w-full sm:w-96 bg-white shadow-2xl z-50 flex flex-col">
               {/* Header del drawer */}
               <div className="flex-shrink-0 bg-white border-b border-gray-200 px-4 py-3 flex items-center justify-between shadow-sm">
-                <h2 className="font-bold text-gray-800">Días y Lugares</h2>
+                <h2 className="font-bold text-gray-800">Days & Places</h2>
                 <button
                   onClick={() => setIsSidebarOpen(false)}
                   className="p-2 hover:bg-gray-100 rounded-md transition-colors"

@@ -1,4 +1,5 @@
 @import "tailwindcss";
+@import "leaflet/dist/leaflet.css";
 
 button {
   cursor: pointer;
@@ -6,4 +7,19 @@ button {
 
 button:disabled {
   cursor: not-allowed;
+}
+
+/* Custom marker styles for Leaflet */
+.custom-marker {
+  background: transparent;
+  border: none;
+}
+
+/* Leaflet popup customization */
+.leaflet-popup-content-wrapper {
+  border-radius: 8px;
+}
+
+.leaflet-popup-content {
+  margin: 12px;
 }

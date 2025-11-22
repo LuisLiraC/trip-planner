@@ -27,7 +27,7 @@ function PlaceItem({ place, dayId, tripId, onUpdate, onPlaceClick, selectionMode
 
   const handleDelete = (e) => {
     e.stopPropagation()
-    if (confirm('¿Eliminar este lugar?')) {
+    if (confirm('Delete this place?')) {
       deletePlace(tripId, place.id, dayId)
       onUpdate()
     }
@@ -76,7 +76,7 @@ function PlaceItem({ place, dayId, tripId, onUpdate, onPlaceClick, selectionMode
         <button
           onClick={handleDelete}
           className="ml-2 w-6 h-6 flex items-center justify-center flex-shrink-0 text-gray-400 hover:text-red-500 hover:bg-red-50 rounded transition-colors"
-          title="Eliminar lugar"
+          title="Delete place"
         >
           <X size={16} />
         </button>
@@ -88,7 +88,7 @@ function PlaceItem({ place, dayId, tripId, onUpdate, onPlaceClick, selectionMode
 export default function DayBlock({ day, tripId, onUpdate, isSelected, onSelect, isUnassigned = false, onPlaceClick, selectionMode, selectedPlaces, onToggleSelect }) {
   const [isEditing, setIsEditing] = useState(false)
   const places = isUnassigned ? day : day.places
-  const [isCollapsed, setIsCollapsed] = useState(false)
+  const [isCollapsed, setIsCollapsed] = useState(true)
   const [title, setTitle] = useState(day.title)
   const [date, setDate] = useState(day.date)
   const [color, setColor] = useState(day.color)
@@ -138,7 +138,7 @@ export default function DayBlock({ day, tripId, onUpdate, isSelected, onSelect, 
   }
 
   const handleDelete = () => {
-    if (confirm('¿Eliminar este día? Los lugares se moverán a "Sin asignar"')) {
+    if (confirm('Delete this day? Places will be moved to "Unassigned"')) {
       deleteDay(tripId, day.id)
       onUpdate()
     }
@@ -216,7 +216,7 @@ export default function DayBlock({ day, tripId, onUpdate, isSelected, onSelect, 
                 type="text"
                 value={title}
                 onChange={(e) => setTitle(e.target.value)}
-                placeholder="Título del día"
+                placeholder="Day title"
                 className="w-full px-3 py-1.5 rounded-md border border-white/40 text-sm text-gray-800 bg-white/95 focus:outline-none focus:ring-2 focus:ring-white/60"
                 autoFocus
               />
@@ -236,12 +236,12 @@ export default function DayBlock({ day, tripId, onUpdate, isSelected, onSelect, 
                   value={color}
                   onChange={(e) => setColor(e.target.value)}
                   className="w-9 h-9 rounded-md cursor-pointer border-2 border-white/50 flex-shrink-0"
-                  title="Cambiar color"
+                  title="Change color"
                 />
                 <button
                   onClick={handleSave}
                   className="w-9 h-9 bg-white text-green-600 rounded-md hover:bg-white/90 transition-colors shadow-sm flex items-center justify-center flex-shrink-0"
-                  title="Guardar"
+                  title="Save"
                 >
                   <Check size={18} />
                 </button>
@@ -250,7 +250,7 @@ export default function DayBlock({ day, tripId, onUpdate, isSelected, onSelect, 
                   className={`w-9 h-9 rounded-md transition-colors flex items-center justify-center flex-shrink-0 ${
                     shouldUseDarkText(color) ? 'bg-black/10 hover:bg-black/15 text-gray-800' : 'bg-white/20 hover:bg-white/30 text-white'
                   }`}
-                  title="Cancelar"
+                  title="Cancel"
                 >
                   <X size={18} />
                 </button>
@@ -260,11 +260,11 @@ export default function DayBlock({ day, tripId, onUpdate, isSelected, onSelect, 
             <div className="flex justify-between items-center gap-2">
               <div className="flex-1 min-w-0">
                 <h3 className={`font-semibold truncate ${textColorClass}`}>
-                  {isUnassigned ? 'Sin asignar' : (title || 'Día sin título')}
+                  {isUnassigned ? 'Unassigned' : (title || 'Untitled day')}
                 </h3>
                 {!isUnassigned && date && (
                   <p className={`text-xs mt-0.5 ${textOpacityClass}`}>
-                    {new Date(date).toLocaleDateString('es-ES', {
+                    {new Date(date).toLocaleDateString('en-US', {
                       day: 'numeric',
                       month: 'long',
                       year: 'numeric'
@@ -272,7 +272,7 @@ export default function DayBlock({ day, tripId, onUpdate, isSelected, onSelect, 
                   </p>
                 )}
                 <p className={`text-xs mt-0.5 ${textOpacityClass}`}>
-                  {Array.isArray(places) ? places.length : 0} {Array.isArray(places) && places.length === 1 ? 'lugar' : 'lugares'}
+                  {Array.isArray(places) ? places.length : 0} {Array.isArray(places) && places.length === 1 ? 'place' : 'places'}
                 </p>
               </div>
               {!isUnassigned && (
@@ -282,14 +282,14 @@ export default function DayBlock({ day, tripId, onUpdate, isSelected, onSelect, 
                     className={`w-7 h-7 flex items-center justify-center rounded transition-colors ${
                       shouldUseDarkText(color) ? 'bg-black/10 hover:bg-black/20 text-gray-700' : 'bg-white/20 hover:bg-white/30 text-white'
                     }`}
-                    title="Editar"
+                    title="Edit"
                   >
                     <Pencil size={14} />
                   </button>
                   <button
                     onClick={handleDelete}
                     className="w-7 h-7 flex items-center justify-center bg-red-500/80 hover:bg-red-500 text-white rounded transition-colors"
-                    title="Eliminar"
+                    title="Delete"
                   >
                     <Trash2 size={14} />
                   </button>
@@ -320,7 +320,7 @@ export default function DayBlock({ day, tripId, onUpdate, isSelected, onSelect, 
           ))
         ) : (
           <p className="text-sm text-center py-6 text-gray-400">
-            {isUnassigned ? 'No hay lugares sin asignar' : 'Arrastra lugares aquí'}
+            {isUnassigned ? 'No unassigned places' : 'Drag places here'}
           </p>
         )}
       </div>

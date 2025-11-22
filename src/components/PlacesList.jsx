@@ -106,7 +106,7 @@ export default function PlacesList({ trip, selectedDayId, onSelectDay, onUpdate,
     <div className="h-full flex flex-col">
       <div className="flex-shrink-0 p-3 bg-white">
         <div className="flex items-center justify-between mb-3 px-1">
-          <h2 className="text-base font-bold text-gray-800">Días y Lugares</h2>
+          <h2 className="text-base font-bold text-gray-800">Days & Places</h2>
           <button
             onClick={handleToggleSelectionMode}
             className={`px-3 py-1.5 rounded-md text-sm font-medium transition-colors flex items-center gap-1.5 ${
@@ -114,17 +114,17 @@ export default function PlacesList({ trip, selectedDayId, onSelectDay, onUpdate,
                 ? 'bg-blue-600 text-white hover:bg-blue-700'
                 : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
             }`}
-            title={selectionMode ? 'Cancelar selección' : 'Seleccionar varios lugares'}
+            title={selectionMode ? 'Cancel selection' : 'Select multiple places'}
           >
             {selectionMode ? (
               <>
                 <X size={16} />
-                <span>Cancelar</span>
+                <span>Cancel</span>
               </>
             ) : (
               <>
                 <CheckSquare size={16} />
-                <span>Seleccionar</span>
+                <span>Select</span>
               </>
             )}
           </button>
@@ -135,7 +135,7 @@ export default function PlacesList({ trip, selectedDayId, onSelectDay, onUpdate,
           <div className="mb-4 p-3 bg-blue-50 border border-blue-200 rounded-lg">
             <div className="flex flex-col gap-2">
               <p className="text-sm font-medium text-blue-900">
-                {selectedPlaces.length} {selectedPlaces.length === 1 ? 'lugar seleccionado' : 'lugares seleccionados'}
+                {selectedPlaces.length} {selectedPlaces.length === 1 ? 'place selected' : 'places selected'}
               </p>
               <div className="flex gap-2">
                 <select
@@ -143,11 +143,11 @@ export default function PlacesList({ trip, selectedDayId, onSelectDay, onUpdate,
                   onChange={(e) => onTargetDayIdChange(e.target.value)}
                   className="flex-1 px-3 py-2 border border-blue-300 rounded-md text-sm bg-white"
                 >
-                  <option value="">Seleccionar destino...</option>
-                  <option value="unassigned">Sin asignar</option>
+                  <option value="">Select destination...</option>
+                  <option value="unassigned">Unassigned</option>
                   {trip.days.map(day => (
                     <option key={day.id} value={day.id}>
-                      {day.title || 'Día sin título'}
+                      {day.title || 'Untitled day'}
                     </option>
                   ))}
                 </select>
@@ -155,10 +155,10 @@ export default function PlacesList({ trip, selectedDayId, onSelectDay, onUpdate,
                   onClick={onMoveSelected}
                   disabled={!targetDayId}
                   className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors text-sm font-medium flex items-center gap-1.5 disabled:bg-gray-300 disabled:cursor-not-allowed flex-shrink-0"
-                  title="Mover lugares seleccionados"
+                  title="Move selected places"
                 >
                   <MoveRight size={16} />
-                  Mover
+                  Move
                 </button>
               </div>
             </div>
@@ -172,14 +172,14 @@ export default function PlacesList({ trip, selectedDayId, onSelectDay, onUpdate,
               type="text"
               value={newDayTitle}
               onChange={(e) => setNewDayTitle(e.target.value)}
-              placeholder="Ej: Día 1 - Centro de la ciudad"
+              placeholder="E.g.: Day 1 - City center"
               className="flex-1 px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
             />
             <button
               type="submit"
               disabled={!newDayTitle.trim()}
               className="w-10 h-10 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors shadow-sm flex items-center justify-center disabled:bg-gray-300 disabled:cursor-not-allowed"
-              title="Agregar día"
+              title="Add day"
             >
               <Plus size={20} />
             </button>
@@ -232,7 +232,7 @@ export default function PlacesList({ trip, selectedDayId, onSelectDay, onUpdate,
               <div className="bg-white border-2 border-blue-500 rounded-lg p-3 shadow-2xl opacity-90 flex items-center gap-2">
                 {activeType === 'day-block' ? <Map size={16} className="text-blue-600" /> : <MapPin size={16} className="text-blue-600" />}
                 <p className="font-medium text-blue-700 text-sm">
-                  {activeType === 'day-block' ? 'Moviendo bloque...' : 'Arrastrando lugar...'}
+                  {activeType === 'day-block' ? 'Moving block...' : 'Dragging place...'}
                 </p>
               </div>
             ) : null}
@@ -246,7 +246,7 @@ export default function PlacesList({ trip, selectedDayId, onSelectDay, onUpdate,
             className="w-full mt-3 px-4 py-2.5 bg-gradient-to-r from-blue-50 to-indigo-50 text-blue-700 rounded-md hover:from-blue-100 hover:to-indigo-100 transition-all font-medium text-sm border border-blue-200 flex items-center justify-center gap-2"
           >
             <Map size={16} />
-            <span>Mostrar todos los lugares</span>
+            <span>Show all places</span>
           </button>
         )}
       </div>

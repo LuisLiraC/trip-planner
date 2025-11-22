@@ -28,7 +28,7 @@ export default function TripList({ onSelectTrip }) {
   }
 
   const handleDeleteTrip = (id) => {
-    if (confirm('¿Estás seguro de eliminar este viaje?')) {
+    if (confirm('Are you sure you want to delete this trip?')) {
       deleteTrip(id)
       loadTrips()
     }
@@ -58,7 +58,7 @@ export default function TripList({ onSelectTrip }) {
       exportTrips()
     } catch (error) {
       console.error(error)
-      alert('Error al exportar los viajes')
+      alert('Error exporting trips')
     }
   }
 
@@ -72,17 +72,17 @@ export default function TripList({ onSelectTrip }) {
 
     // Preguntar si quiere reemplazar o fusionar
     const shouldMerge = confirm(
-      '¿Quieres FUSIONAR estos viajes con los existentes?\n\n' +
-      'OK = Agregar a los viajes actuales (fusionar)\n' +
-      'Cancelar = Reemplazar todos los viajes actuales'
+      'Do you want to MERGE these trips with existing ones?\n\n' +
+      'OK = Add to current trips (merge)\n' +
+      'Cancel = Replace all current trips'
     )
 
     try {
       const result = await importTrips(file, shouldMerge)
       loadTrips()
       alert(
-        `${result.count} viaje(s) importado(s) correctamente.\n\n` +
-        `Modo: ${result.mode === 'merge' ? 'Fusionado' : 'Reemplazado'}`
+        `${result.count} trip(s) imported successfully.\n\n` +
+        `Mode: ${result.mode === 'merge' ? 'Merged' : 'Replaced'}`
       )
     } catch (error) {
       alert(error.message)
@@ -98,25 +98,25 @@ export default function TripList({ onSelectTrip }) {
         <div className="flex items-center justify-between mb-4 md:mb-6 flex-wrap gap-3">
           <div className="flex items-center gap-2 md:gap-3">
             <Plane size={24} className="text-blue-600 md:w-8 md:h-8" />
-            <h1 className="text-2xl md:text-3xl font-bold text-gray-800">Mis Viajes</h1>
+            <h1 className="text-2xl md:text-3xl font-bold text-gray-800">My Trips</h1>
           </div>
           <div className="flex gap-2 flex-shrink-0">
             <button
               onClick={handleExport}
               disabled={trips.length === 0}
               className="px-3 md:px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors font-medium shadow-sm flex items-center gap-1 md:gap-2 disabled:bg-gray-300 disabled:cursor-not-allowed text-sm"
-              title="Exportar todos los viajes"
+              title="Export all trips"
             >
               <Download size={16} className="md:w-[18px] md:h-[18px]" />
-              <span className="hidden sm:inline">Exportar</span>
+              <span className="hidden sm:inline">Export</span>
             </button>
             <button
               onClick={handleImportClick}
               className="px-3 md:px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors font-medium shadow-sm flex items-center gap-1 md:gap-2 text-sm"
-              title="Importar viajes desde archivo"
+              title="Import trips from file"
             >
               <Upload size={16} className="md:w-[18px] md:h-[18px]" />
-              <span className="hidden sm:inline">Importar</span>
+              <span className="hidden sm:inline">Import</span>
             </button>
             <input
               ref={fileInputRef}
@@ -135,14 +135,14 @@ export default function TripList({ onSelectTrip }) {
               type="text"
               value={newTripName}
               onChange={(e) => setNewTripName(e.target.value)}
-              placeholder="Ej: Viaje a Japón Abril 2026"
+              placeholder="E.g.: Japan Trip April 2026"
               className="flex-1 px-3 md:px-4 py-2 md:py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-gray-800 text-sm md:text-base"
             />
             <button
               type="submit"
               className="px-4 md:px-6 py-2 md:py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors font-medium shadow-sm text-sm md:text-base whitespace-nowrap"
             >
-              Crear Viaje
+              Create Trip
             </button>
           </div>
         </form>
@@ -152,8 +152,8 @@ export default function TripList({ onSelectTrip }) {
       {trips.length === 0 ? (
         <div className="text-center py-12 md:py-16 bg-white rounded-xl border-2 border-dashed border-gray-300">
           <Plane size={40} className="mx-auto text-gray-300 mb-4 md:w-12 md:h-12" />
-          <p className="text-gray-600 font-medium text-sm md:text-base">No tienes viajes guardados aún</p>
-          <p className="text-gray-400 text-xs md:text-sm mt-2 px-4">Crea tu primer viaje usando el formulario arriba</p>
+          <p className="text-gray-600 font-medium text-sm md:text-base">You don't have any saved trips yet</p>
+          <p className="text-gray-400 text-xs md:text-sm mt-2 px-4">Create your first trip using the form above</p>
         </div>
       ) : (
         <div className="grid gap-2 md:gap-3">
@@ -177,14 +177,14 @@ export default function TripList({ onSelectTrip }) {
                       className="flex-1 sm:flex-none px-3 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 transition-colors flex items-center justify-center gap-1.5"
                     >
                       <Check size={16} />
-                      <span className="text-sm">Guardar</span>
+                      <span className="text-sm">Save</span>
                     </button>
                     <button
                       onClick={handleCancelEdit}
                       className="flex-1 sm:flex-none px-3 py-2 bg-gray-200 text-gray-700 rounded-md hover:bg-gray-300 transition-colors flex items-center justify-center gap-1.5"
                     >
                       <X size={16} />
-                      <span className="text-sm">Cancelar</span>
+                      <span className="text-sm">Cancel</span>
                     </button>
                   </div>
                 </div>
@@ -197,7 +197,7 @@ export default function TripList({ onSelectTrip }) {
                     <div className="flex gap-3 md:gap-4 text-xs md:text-sm text-gray-500">
                       <div className="flex items-center gap-1 md:gap-1.5">
                         <Calendar size={14} />
-                        <span>{trip.days.length} {trip.days.length === 1 ? 'día' : 'días'}</span>
+                        <span>{trip.days.length} {trip.days.length === 1 ? 'day' : 'days'}</span>
                       </div>
                       <div className="flex items-center gap-1 md:gap-1.5">
                         <MapPin size={14} />
@@ -205,7 +205,7 @@ export default function TripList({ onSelectTrip }) {
                           {trip.days.reduce((acc, day) => acc + day.places.length, 0) +
                            trip.unassignedPlaces.length} {
                             (trip.days.reduce((acc, day) => acc + day.places.length, 0) +
-                             trip.unassignedPlaces.length) === 1 ? 'lugar' : 'lugares'
+                             trip.unassignedPlaces.length) === 1 ? 'place' : 'places'
                           }
                         </span>
                       </div>
@@ -216,19 +216,19 @@ export default function TripList({ onSelectTrip }) {
                       onClick={() => onSelectTrip(trip.id)}
                       className="flex-1 sm:flex-none px-3 md:px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors font-medium text-sm shadow-sm"
                     >
-                      Abrir
+                      Open
                     </button>
                     <button
                       onClick={() => handleStartEdit(trip)}
                       className="px-2 md:px-3 py-2 bg-gray-100 text-gray-700 rounded-md hover:bg-gray-200 transition-colors flex items-center"
-                      title="Editar"
+                      title="Edit"
                     >
                       <Edit2 size={16} />
                     </button>
                     <button
                       onClick={() => handleDeleteTrip(trip.id)}
                       className="px-2 md:px-3 py-2 bg-red-50 text-red-600 rounded-md hover:bg-red-100 transition-colors flex items-center"
-                      title="Eliminar"
+                      title="Delete"
                     >
                       <Trash2 size={16} />
                     </button>
