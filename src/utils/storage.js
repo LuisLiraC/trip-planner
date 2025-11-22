@@ -217,6 +217,29 @@ export const exportTrips = () => {
   URL.revokeObjectURL(url)
 }
 
+// Helper to generate new IDs for imported trips (to avoid duplicates when merging)
+const regenerateIds = (trip) => {
+  const newTripId = Date.now().toString() + Math.random().toString(36).substr(2, 9)
+
+  return {
+    ...trip,
+    id: newTripId,
+    createdAt: new Date().toISOString(),
+    days: trip.days.map((day, dayIndex) => ({
+      ...day,
+      id: `${newTripId}-day-${dayIndex}-${Date.now()}`,
+      places: day.places.map((place, placeIndex) => ({
+        ...place,
+        id: `${newTripId}-place-${dayIndex}-${placeIndex}-${Date.now()}`
+      }))
+    })),
+    unassignedPlaces: trip.unassignedPlaces.map((place, placeIndex) => ({
+      ...place,
+      id: `${newTripId}-unassigned-${placeIndex}-${Date.now()}`
+    }))
+  }
+}
+
 // Importar viajes desde un archivo JSON
 export const importTrips = (file, mergeMode = false) => {
   return new Promise((resolve, reject) => {
@@ -228,36 +251,37 @@ export const importTrips = (file, mergeMode = false) => {
 
         // Validar que sea un array
         if (!Array.isArray(importedTrips)) {
-          reject(new Error('El archivo no tiene el formato correcto'))
+          reject(new Error('Invalid file format'))
           return
         }
 
         // Validar que cada viaje tenga la estructura correcta
         for (const trip of importedTrips) {
           if (!trip.id || !trip.name || !trip.days || !trip.unassignedPlaces) {
-            reject(new Error('El archivo no tiene el formato correcto'))
+            reject(new Error('Invalid file format'))
             return
           }
         }
 
         if (mergeMode) {
-          // Fusionar con los viajes existentes
+          // Generate new IDs for imported trips to avoid duplicates
+          const tripsWithNewIds = importedTrips.map(regenerateIds)
           const existingTrips = getTrips()
-          const mergedTrips = [...existingTrips, ...importedTrips]
+          const mergedTrips = [...existingTrips, ...tripsWithNewIds]
           saveTrips(mergedTrips)
           resolve({ mode: 'merge', count: importedTrips.length })
         } else {
-          // Reemplazar todos los viajes
+          // Replace all trips (keep original IDs)
           saveTrips(importedTrips)
           resolve({ mode: 'replace', count: importedTrips.length })
         }
       } catch (error) {
-        reject(new Error('Error al leer el archivo. Asegúrate de que sea un archivo JSON válido.'))
+        reject(new Error('Error reading file. Make sure it is a valid JSON file.'))
       }
     }
 
     reader.onerror = () => {
-      reject(new Error('Error al leer el archivo'))
+      reject(new Error('Error reading file'))
     }
 
     reader.readAsText(file)

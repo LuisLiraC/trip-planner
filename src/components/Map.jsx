@@ -60,6 +60,14 @@ function SearchBox({ onPlaceSelect }) {
     return () => document.removeEventListener('mousedown', handleClickOutside)
   }, [])
 
+  // Disable click propagation to Leaflet map
+  useEffect(() => {
+    if (searchRef.current) {
+      L.DomEvent.disableClickPropagation(searchRef.current)
+      L.DomEvent.disableScrollPropagation(searchRef.current)
+    }
+  }, [])
+
   // Debounce search
   useEffect(() => {
     const doSearch = async () => {
@@ -127,6 +135,9 @@ function SearchBox({ onPlaceSelect }) {
     <div
       ref={searchRef}
       className="absolute top-2 md:top-4 left-1/2 -translate-x-1/2 z-[1000] w-[calc(100%-1rem)] sm:w-96 max-w-md"
+      onClick={(e) => e.stopPropagation()}
+      onMouseDown={(e) => e.stopPropagation()}
+      onTouchStart={(e) => e.stopPropagation()}
     >
       <div className="relative">
         <Search

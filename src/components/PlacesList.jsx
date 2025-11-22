@@ -9,13 +9,14 @@ import {
 } from '@dnd-kit/core'
 import DayBlock from './DayBlock'
 import { addDay, reorderDays, movePlace } from '../utils/storage'
-import { Map, MapPin, Plus, CheckSquare, X, MoveRight } from 'lucide-react'
+import { Map, MapPin, Plus, CheckSquare, X, MoveRight, Search } from 'lucide-react'
 
 export default function PlacesList({ trip, selectedDayId, onSelectDay, onUpdate, onPlaceClick, selectedPlaces = [], onSelectedPlacesChange, targetDayId = '', onTargetDayIdChange, onMoveSelected }) {
   const [activeId, setActiveId] = useState(null)
   const [activeType, setActiveType] = useState(null)
   const [newDayTitle, setNewDayTitle] = useState('')
   const [selectionMode, setSelectionMode] = useState(false)
+  const [searchQuery, setSearchQuery] = useState('')
 
   const sensors = useSensors(
     useSensor(PointerSensor, {
@@ -166,7 +167,7 @@ export default function PlacesList({ trip, selectedDayId, onSelectDay, onUpdate,
         )}
 
         {/* Formulario para agregar nuevo día */}
-        <form onSubmit={handleAddDay} className="mb-4">
+        <form onSubmit={handleAddDay} className="mb-3">
           <div className="flex gap-2">
             <input
               type="text"
@@ -185,6 +186,29 @@ export default function PlacesList({ trip, selectedDayId, onSelectDay, onUpdate,
             </button>
           </div>
         </form>
+
+        {/* Search places */}
+        <div className="relative mb-2">
+          <Search
+            size={16}
+            className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none"
+          />
+          <input
+            type="text"
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            placeholder="Filter saved places..."
+            className="w-full py-2 pl-9 pr-8 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+          />
+          {searchQuery && (
+            <button
+              onClick={() => setSearchQuery('')}
+              className="absolute right-2 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 p-1"
+            >
+              <X size={14} />
+            </button>
+          )}
+        </div>
       </div>
 
       {/* Área con scroll para los bloques */}
@@ -209,6 +233,7 @@ export default function PlacesList({ trip, selectedDayId, onSelectDay, onUpdate,
               selectionMode={selectionMode}
               selectedPlaces={selectedPlaces}
               onToggleSelect={handleToggleSelect}
+              searchQuery={searchQuery}
             />
           ))}
 
@@ -225,6 +250,7 @@ export default function PlacesList({ trip, selectedDayId, onSelectDay, onUpdate,
             selectionMode={selectionMode}
             selectedPlaces={selectedPlaces}
             onToggleSelect={handleToggleSelect}
+            searchQuery={searchQuery}
           />
 
           <DragOverlay>

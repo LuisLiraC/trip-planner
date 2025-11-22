@@ -1,9 +1,9 @@
 import { useState } from 'react'
 import { updateDay, deleteDay, deletePlace } from '../utils/storage'
 import { useDraggable, useDroppable } from '@dnd-kit/core'
-import { Pencil, Trash2, X, Check, Calendar } from 'lucide-react'
+import { Pencil, Trash2, X, Check, Calendar, AlertTriangle } from 'lucide-react'
 
-function PlaceItem({ place, dayId, tripId, onUpdate, onPlaceClick, selectionMode, isSelected, onToggleSelect }) {
+function PlaceItem({ place, dayId, tripId, onUpdate, onPlaceClick, selectionMode, isSelected, onToggleSelect, onRequestDelete }) {
   const {
     attributes,
     listeners,
@@ -27,10 +27,14 @@ function PlaceItem({ place, dayId, tripId, onUpdate, onPlaceClick, selectionMode
 
   const handleDelete = (e) => {
     e.stopPropagation()
-    if (confirm('Delete this place?')) {
-      deletePlace(tripId, place.id, dayId)
-      onUpdate()
-    }
+    onRequestDelete({
+      title: 'Delete Place',
+      message: `Are you sure you want to delete "${place.name}"?`,
+      onConfirm: () => {
+        deletePlace(tripId, place.id, dayId)
+        onUpdate()
+      }
+    })
   }
 
   const handleClick = (e) => {
@@ -85,10 +89,34 @@ function PlaceItem({ place, dayId, tripId, onUpdate, onPlaceClick, selectionMode
   )
 }
 
-export default function DayBlock({ day, tripId, onUpdate, isSelected, onSelect, isUnassigned = false, onPlaceClick, selectionMode, selectedPlaces, onToggleSelect }) {
+export default function DayBlock({ day, tripId, onUpdate, isSelected, onSelect, isUnassigned = false, onPlaceClick, selectionMode, selectedPlaces, onToggleSelect, searchQuery = '' }) {
   const [isEditing, setIsEditing] = useState(false)
-  const places = isUnassigned ? day : day.places
+  const [confirmModal, setConfirmModal] = useState({ show: false, title: '', message: '', onConfirm: null })
+
+  const showConfirm = (config) => {
+    setConfirmModal({ show: true, ...config })
+  }
+
+  const hideConfirm = () => {
+    setConfirmModal({ show: false, title: '', message: '', onConfirm: null })
+  }
+  const allPlaces = isUnassigned ? day : day.places
   const [isCollapsed, setIsCollapsed] = useState(true)
+
+  // Filter places based on search query
+  const isSearching = searchQuery.trim().length > 0
+  const filteredPlaces = isSearching
+    ? allPlaces.filter(place =>
+        place.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        place.address?.toLowerCase().includes(searchQuery.toLowerCase())
+      )
+    : allPlaces
+
+  // Use filtered places for display, but keep allPlaces for counting
+  const places = filteredPlaces
+
+  // Auto-expand ALL days when searching (so user can drag to any day)
+  const shouldExpand = isSearching
   const [title, setTitle] = useState(day.title)
   const [date, setDate] = useState(day.date)
   const [color, setColor] = useState(day.color)
@@ -137,11 +165,16 @@ export default function DayBlock({ day, tripId, onUpdate, isSelected, onSelect, 
     setIsEditing(false)
   }
 
-  const handleDelete = () => {
-    if (confirm('Delete this day? Places will be moved to "Unassigned"')) {
-      deleteDay(tripId, day.id)
-      onUpdate()
-    }
+  const handleDeleteDay = () => {
+    showConfirm({
+      title: 'Delete Day',
+      message: `Are you sure you want to delete "${day.title || 'Untitled day'}"? All places will be moved to "Unassigned".`,
+      onConfirm: () => {
+        deleteDay(tripId, day.id)
+        onUpdate()
+        hideConfirm()
+      }
+    })
   }
 
   // Función para determinar si el texto debe ser oscuro basado en el color de fondo
@@ -272,7 +305,10 @@ export default function DayBlock({ day, tripId, onUpdate, isSelected, onSelect, 
                   </p>
                 )}
                 <p className={`text-xs mt-0.5 ${textOpacityClass}`}>
-                  {Array.isArray(places) ? places.length : 0} {Array.isArray(places) && places.length === 1 ? 'place' : 'places'}
+                  {Array.isArray(allPlaces) ? allPlaces.length : 0} {Array.isArray(allPlaces) && allPlaces.length === 1 ? 'place' : 'places'}
+                  {isSearching && filteredPlaces.length > 0 && filteredPlaces.length !== allPlaces.length && (
+                    <span className="ml-1">({filteredPlaces.length} match{filteredPlaces.length !== 1 ? 'es' : ''})</span>
+                  )}
                 </p>
               </div>
               {!isUnassigned && (
@@ -287,7 +323,7 @@ export default function DayBlock({ day, tripId, onUpdate, isSelected, onSelect, 
                     <Pencil size={14} />
                   </button>
                   <button
-                    onClick={handleDelete}
+                    onClick={handleDeleteDay}
                     className="w-7 h-7 flex items-center justify-center bg-red-500/80 hover:bg-red-500 text-white rounded transition-colors"
                     title="Delete"
                   >
@@ -302,7 +338,7 @@ export default function DayBlock({ day, tripId, onUpdate, isSelected, onSelect, 
 
       {/* Lista de lugares */}
       <div
-        className={`transition-colors bg-gray-50 ${!isCollapsed ? 'p-2.5 space-y-1.5 max-h-96 overflow-y-auto' : 'hidden'}`}
+        className={`transition-colors bg-gray-50 ${(shouldExpand || !isCollapsed) ? 'p-2.5 space-y-1.5 max-h-96 overflow-y-auto' : 'hidden'}`}
       >
         {Array.isArray(places) && places.length > 0 ? (
           places.map((place) => (
@@ -316,14 +352,53 @@ export default function DayBlock({ day, tripId, onUpdate, isSelected, onSelect, 
               selectionMode={selectionMode}
               isSelected={selectedPlaces?.includes(place.id)}
               onToggleSelect={onToggleSelect}
+              onRequestDelete={showConfirm}
             />
           ))
         ) : (
           <p className="text-sm text-center py-6 text-gray-400">
-            {isUnassigned ? 'No unassigned places' : 'Drag places here'}
+            {isSearching ? 'No matches' : (isUnassigned ? 'No unassigned places' : 'Drag places here')}
           </p>
         )}
       </div>
+
+      {/* Confirm Modal */}
+      {confirmModal.show && (
+        <>
+          <div
+            className="fixed inset-0 bg-black/50 z-[9998]"
+            onClick={hideConfirm}
+          />
+          <div className="fixed inset-0 z-[9999] flex items-center justify-center p-4">
+            <div className="bg-white rounded-xl shadow-2xl max-w-sm w-full p-6" onClick={(e) => e.stopPropagation()}>
+              <div className="flex items-center gap-3 mb-4">
+                <div className="w-10 h-10 bg-red-100 rounded-full flex items-center justify-center">
+                  <AlertTriangle size={20} className="text-red-600" />
+                </div>
+                <h3 className="text-lg font-bold text-gray-800">{confirmModal.title}</h3>
+              </div>
+              <p className="text-gray-600 text-sm mb-6">{confirmModal.message}</p>
+              <div className="flex gap-3">
+                <button
+                  onClick={hideConfirm}
+                  className="flex-1 py-2.5 px-4 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-colors font-medium text-sm"
+                >
+                  Cancel
+                </button>
+                <button
+                  onClick={() => {
+                    confirmModal.onConfirm?.()
+                    hideConfirm()
+                  }}
+                  className="flex-1 py-2.5 px-4 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors font-medium text-sm"
+                >
+                  Delete
+                </button>
+              </div>
+            </div>
+          </div>
+        </>
+      )}
     </div>
   )
 }
