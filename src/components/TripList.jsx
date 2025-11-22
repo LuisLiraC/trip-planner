@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from 'react'
 import { getTrips, createTrip, deleteTrip, updateTrip, exportTrips, importTrips } from '../utils/storage'
-import { Plane, MapPin, Calendar, Edit2, Trash2, Check, X, Download, Upload, GitMerge, Replace, AlertTriangle, CheckCircle, XCircle, HelpCircle, ChevronDown, ChevronUp, Search, GripVertical, MousePointer } from 'lucide-react'
+import { Plane, MapPin, Calendar, Edit2, Trash2, Check, X, Download, Upload, GitMerge, Replace, AlertTriangle, CheckCircle, XCircle, HelpCircle, Search, GripVertical, MousePointer } from 'lucide-react'
 
 export default function TripList({ onSelectTrip }) {
   const [trips, setTrips] = useState([])
