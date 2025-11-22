@@ -381,6 +381,21 @@ export default function TripList({ onSelectTrip }) {
         </div>
       )}
 
+      {/* Footer */}
+      <footer className="mt-12 pt-6 border-t border-gray-200 text-center">
+        <p className="text-sm text-gray-400">
+          Created by{' '}
+          <a
+            href="https://github.com/LuisLiraC"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="text-blue-500 hover:text-blue-600 hover:underline transition-colors"
+          >
+            Luis Lira
+          </a>
+        </p>
+      </footer>
+
       {/* Help Modal */}
       {showHelp && (
         <>
